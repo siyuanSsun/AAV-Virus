@@ -11,6 +11,7 @@
 #####################################################################################
 
 import numpy as np
+import warnings
 try: 
   import mrcfile as mf
 except:
@@ -22,9 +23,10 @@ class mask():
   def __init__(self, filename, threshold=1.0, r=0):
     '''
     Initialize the mask class
+
     Args: filename: name of input file
-        threshold: the value you choose from Chimera viewer
-        r: scattering radius for each pixel
+          threshold: the value you choose from Chimera viewer
+          r: scattering radius for each pixel
 
     '''
     self.filename = filename
@@ -34,11 +36,15 @@ class mask():
 
   def initModel(self):
     '''
-    Open and store the mrc model, store the model in a private value
+    Open and store the mrc model data in numpy array
     '''
-    with mf.open(self.filename, mode='r+', permissive=True) as model:
-      self.model_data = model.data
-      self.nx, self.ny, self.nz = model.data.shape
+    with warnings.catch_warnings(record=True) as w:
+      print("Loading MRC file " + self.filename)
+      with mf.open(self.filename, mode='r+', permissive=True) as model:
+        self.model_data = model.data
+        self.voxel_size = model.voxel_size
+        self.nx, self.ny, self.nz = model.data.shape
+        print("MRC file loaded")
 
   def showData(self):
     # TODO something with self.model.data
@@ -60,21 +66,28 @@ class mask():
 
   def generateMask(self):
     '''
-    Generate the outside shell mask of the given virus
+    Generate the outside shell mask of the given virus.
+
+    First, initialize data as ones where voxel threshold is larger than the given value, and zero where voxel threshold is smaller than the given value
+    Second, scatter those 'ones' voxel in a given radius, i.e. use a cube or sphere among which voxels are set to ones
 
     Output: the mask of input filename
     '''
-    tmp_data = (self.model_data >= self.threshold) * 1
+    tmp_data = (self.model_data >= self.threshold) * 1  # numpy matrix operation, simple and fast
     data = np.array(tmp_data, dtype=np.int8)
+
+    print("Dealing with scattering voxels")
     for pos in np.argwhere(tmp_data == 1):
       for r in range(1, self.r+1):
         loc = self.scatter(pos, r)
-        data[loc[:,0], loc[:,[1]], loc[:,2]] = 1
+        data[loc[:,0], loc[:,1], loc[:,2]] = 1 # avoid frequent for-loop
       
     
     with mf.new(self.filename + '.mask.mrc', overwrite=True) as nmask:
+      print("Generating mask")
       nmask.set_data(data)
-      print("Mask Generated")
+      nmask.voxel_size = self.voxel_size
+      print("Mask Generated -- Done")
     
 
 
@@ -82,6 +95,9 @@ class mask():
   def scatter(self, p, step):
     '''
     Scatter the pixel in (i, j, k) into surrounding postion
+
+    Args: p, psotion of current voxel (i, j, k)
+          step, scattering radius
 
     Return: surrounding pixels position list
     '''
@@ -97,6 +113,11 @@ class mask():
             else:
               pos.append([p[0]+(x-1)*step, p[1]+(y-1)*step, p[2]+(z-1)*step])
     return np.array(pos)
+
+
+  def isolatedPoint(self):
+    # TODO, ideas come from Hu Mingxu
+    pass
 
 
 
