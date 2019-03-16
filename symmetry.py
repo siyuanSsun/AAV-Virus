@@ -25,20 +25,21 @@ class symmetry():
     Initialize symmetry class
 
     args: sym: symmetry symbols, for example, C1, D1, I1 etc, here we focus on I1 symmetry firstly
-               (reference: https://en.wikipedia.org/wiki/Schoenflies_notation)
+    
+    (reference about symmetry symbols: https://en.wikipedia.org/wiki/Schoenflies_notation)
           
     '''
-    #TODO
+    # TODO
     self.sym = sym
     self.symSwitcher = {}
     self.init()
     pass
 
   def init(self):
-  '''
-  Initialize symmetry axis in a list, axis format in (n, np.array(3))
+    '''
+    Initialize symmetry axis in a list, axis format in (n, np.array(3))
 
-  '''
+    '''
     self.axis = []
     self.axis.append((2, np.array[1, 0, 0]))
     self.axis.append((5, np.array[0.8506508, 0, -0.5257311]))

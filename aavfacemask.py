@@ -15,7 +15,7 @@ import mrcfile as mf
 import numpy as np
 import warnings
 
-filename = './aav_mask.mrc'
+filename = '../Reference_000_A_Final_Mask_02.mrc'
 center = np.array([190, 190, 190])
 
 # 3-fold, 5-fold and 2 fold normalized vector
@@ -38,6 +38,11 @@ b = 0.5257311
 
 l = -1.0e-8
 def isValid(p):
+  '''
+  To validate whether a vector p, is in the region surrounded by 3-fold face
+
+  args: p,  3d numpy array vector
+  '''
   vec = p - center
   x = vec[2]/a
   y = (vec[0]*b + vec[1]*a - x*b*b)/(2*a*b)
@@ -47,9 +52,6 @@ def isValid(p):
 
 
 # Open the mrcfile and obtain its data and voxel information
-
-
-
 with warnings.catch_warnings(record=True) as w:
   print("Loading MRC File......")
   with mf.open(filename, mode='r+', permissive=True) as aav:
@@ -59,17 +61,22 @@ with warnings.catch_warnings(record=True) as w:
   
   print("MRC File Loaded Successfully")
 
-with mf.new(filename+'cut.mrc', overwrite=True) as aav_cut:
+
+# Create a new mrcfile and do the cutting-face task
+with mf.new('aav_face_mask.mrc', overwrite=True) as aav_cut:
   print("Prepare Cutting Face......")
   for x in range(nx):
     for y in range(ny):
       for z in range(nz):
         if(data[x,y,z] != 0):
-          if isValid(np.array([x, y, z])):
+          if not isValid(np.array([x, y, z])):
             data[x,y,z] = 0
     if x % 5 == 0:
-      print("%{:.0f} Percent Data Valified...".format(100*(x+1)/nx))
+      print("%{:.0f} Percent Data Processed .....".format(100*(x+1)/nx))
   print("Cutting is Done")
   aav_cut.set_data(data)
   aav_cut.voxel_size = voxel_size
   print("Finished")
+
+
+
