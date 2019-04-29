@@ -24,9 +24,10 @@ class mask():
     '''
     Initialize the mask class
 
-    Args: filename: name of input file
-          threshold: the value you choose from Chimera viewer
-          r: scattering radius for each pixel
+    Args: \n
+    filename: name of input file; \n
+    threshold: the value you choose from Chimera viewer; \n
+    r: scattering radius for each pixel
 
     '''
     self.filename = filename
