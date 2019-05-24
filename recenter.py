@@ -92,9 +92,14 @@ class Recenter():
     starfile: the starfile storing the information; \n
     l: image size of 2D images
     '''
+
+    print("Reading star file ...")
     meta = MetaData(starfile)
+    print("Star file read successfully.")
     submeta = MetaData()
     subparticle = []
+
+    print("Processing metadata ...")
     for particle in meta:
 
       rot = particle.rlnAngleRot
@@ -128,6 +133,7 @@ class Recenter():
 
       subparticle.append(particle)
     
+    print("Metadata process done.")
     submeta.addData(subparticle)
     submeta.write("sub_" + starfile)
   
