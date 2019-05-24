@@ -23,7 +23,7 @@ import sys
 try:
     from itertools import izip
 except:
-    pass
+    izip = zip
 from collections import OrderedDict
 import copy
 

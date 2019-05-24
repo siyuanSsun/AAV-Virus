@@ -1,6 +1,7 @@
 import mrcfile as mf
 import numpy as np
 import argparse
+import math
 import sys
 import warnings
 from pyrelion.metadata import MetaData
@@ -8,7 +9,7 @@ from matrix import rotMatrix
 
 
 class Recenter():
-  def __init__(self, starfile, mstack, mask, dmap, l):
+  def __init__(self, starfile, mask, dmap, l, angpix):
     '''
     Initialization of rencenter
 
@@ -24,20 +25,24 @@ class Recenter():
     # Print out the input information
     print("The input details are:")
     print("Path of star file: {0}".format(starfile))
-    print("Path of stack file: {0}".format(mstack))
     print("Path of 3D mask: {0}".format(mask))
     print("Path of density map: {0}".format(dmap))
-    print("Path of box size: {0}\n".format(l))
+    print("Image size: {0}\n".format(l))
+    print("Pixel size: {0}\n".format(angpix))
     
-    assert (starfile and mstack and mask and dmap and l), "Lack of arguments.\n"
+    assert (starfile and  mask and dmap and l and angpix), "Lack of arguments.\n"
     
-    self.nbox = l
+    self.imagesize = l
     self.starfile = starfile
-    self.mstack = mstack
     self.mask = mask
     self.dmap = dmap
+    self.angpix = angpix
 
-    self.findCenterMass(mask, dmap)
+    
+
+  def main(self):
+    self.cm = self.findCenterMass(self.mask, self.dmap)
+    self.processMeta(self.starfile, self.imagesize, self.angpix)
 
 
   
@@ -73,11 +78,11 @@ class Recenter():
     print(cm)
     print("After approximation: ")
     print(np.around(cm))
-    return np.around(cm)
+    return cm
 
   
 
-  def processMeta(self, starfile):
+  def processMeta(self, starfile, l, angpix):
     '''
     Read and process the stack data of mrc images. This is the key part of recentering.
     In this part, only starfile needs to be modified, then following clip in RELION.
@@ -85,24 +90,48 @@ class Recenter():
 
     Args: \n
     starfile: the starfile storing the information; \n
-    
+    l: image size of 2D images
     '''
     meta = MetaData(starfile)
+    submeta = MetaData()
+    subparticle = []
     for particle in meta:
+
+      rot = particle.rlnAngleRot
+      psi = particle.rlnAnglePsi
+      tilt = particle.rlnAngleTilt 
+
+
+      rotM = rotMatrix(rot, tilt, psi, radians=False)
       
-    pass
-  
-  def transform(angleList):
-    for angle in angleList:
-      rotMatrix()
-    pass
+      cm = -int(l/2) + self.cm
+      cm[0] += particle.rlnOriginX
+      cm[1] += particle.rlnOriginY
 
+      coord = np.dot(rotM, cm)
+
+      x_d, x_i = math.modf(coord[0])
+      y_d, y_i = math.modf(coord[1])
+      z = coord[2]
+      
+      # Modify CTF defocus value
+      particle.rlnDefocusU += z * angpix
+      particle.rlnDefocusV += z * angpix
+
+      # Set up the coordinate value
+      particle.rlnCoordinateX = x_i + int(l/2)
+      particle.rlnCoordinateY = y_i + int(l/2)
+
+      # Set up origin value
+      particle.rlnOriginX = x_d
+      particle.rlnOriginY = y_d
+
+      subparticle.append(particle)
     
-
+    submeta.addData(subparticle)
+    submeta.write("sub_" + starfile)
   
   
-
-
 
 
 if __name__ == "__main__":
@@ -112,9 +141,9 @@ if __name__ == "__main__":
   parser.add_argument("-l", "--length", type=int, help="The size of clipped box.")
   parser.add_argument("-s", "--star", help="Star file that stores the infomation of 2D images.")
   parser.add_argument("-d", "--dmap", help="Density map of 3D reconstruction model.")
-  parser.add_argument("-t", "--stack", help="Stack of 2D images.")
+  parser.add_argument("-a", "--angpix", help="Pixel size of 2D image.")
 
   args = parser.parse_args()
 
-  task = Recenter(args.star, args.stack, args.mask, args.dmap, args.length)
-  
+  my = Recenter(args.star, args.mask, args.dmap, args.length, args.angpix)
+  my.main()

@@ -8,7 +8,12 @@ Curretly only I1 symmetry supported.
 
 import numpy as np
 
-def rotMatrix(rot, tilt, psi):
+def rotMatrix(rot, tilt, psi, radians=True):
+  
+  if not radians:
+    rot = np.radians(rot)
+    psi = np.radians(psi)
+    tilt = np.radians(tilt)
   
   rotM = np.zeros(9,)
 
