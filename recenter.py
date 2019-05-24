@@ -153,4 +153,4 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   my = Recenter(args.star, args.mask, args.dmap, args.length, args.angpix)
-  my.processMeta(args.star, args.length, args.angpix)
+  my.main()
