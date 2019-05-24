@@ -1,9 +1,11 @@
-from EMAN2 import EMData
 import mrcfile as mf
 import numpy as np
 import argparse
 import sys
 import warnings
+from pyrelion.metadata import MetaData
+from matrix import rotMatrix
+
 
 class Recenter():
   def __init__(self, starfile, mstack, mask, dmap, l):
@@ -26,13 +28,16 @@ class Recenter():
     print("Path of 3D mask: {0}".format(mask))
     print("Path of density map: {0}".format(dmap))
     print("Path of box size: {0}\n".format(l))
-
+    
+    assert (starfile and mstack and mask and dmap and l), "Lack of arguments.\n"
+    
     self.nbox = l
     self.starfile = starfile
     self.mstack = mstack
+    self.mask = mask
+    self.dmap = dmap
 
-    # Obtain the center of mass of region of interest
-    self.cm = self.findCenterMass(mask, dmap)
+    self.findCenterMass(mask, dmap)
 
 
   
@@ -46,8 +51,8 @@ class Recenter():
     
     '''
 
-    p = EMData(maskpath)
     print("Finding the center of mask of area of interest.")
+
     with warnings.catch_warnings(record=True) as w:
       print("Opening mask {0}".format(maskpath))
       with mf.open(maskpath, permissive=True) as mask:
@@ -72,29 +77,31 @@ class Recenter():
 
   
 
-  def processMeta(self, starfile, mstack):
+  def processMeta(self, starfile):
     '''
     Read and process the stack data of mrc images. This is the key part of recentering.
+    In this part, only starfile needs to be modified, then following clip in RELION.
+    Actually, only translation and defocus value need to be modified.
 
     Args: \n
     starfile: the starfile storing the information; \n
-    mstack: path of the stack file; \n
     
     '''
+    meta = MetaData(starfile)
+    for particle in meta:
+      
     pass
+  
+  def transform(angleList):
+    for angle in angleList:
+      rotMatrix()
+    pass
+
+    
 
   
   
-  def transformClip(self, rot, image):
-    '''
-    Clip box from a 2D cryo-em image.
 
-    Args: \n
-    rot: rotation matrix; \n
-    image: the 2D cryo-em image; \n
-    
-    '''
-    pass
 
 
 
