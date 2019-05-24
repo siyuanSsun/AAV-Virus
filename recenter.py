@@ -32,11 +32,11 @@ class Recenter():
     
     assert (starfile and  mask and dmap and l and angpix), "Lack of arguments.\n"
     
-    self.imagesize = l
+    self.imagesize = int(l)
     self.starfile = starfile
     self.mask = mask
     self.dmap = dmap
-    self.angpix = angpix
+    self.angpix = float(angpix)
 
     
 
@@ -120,6 +120,7 @@ class Recenter():
       z = coord[2]
       
       # Modify CTF defocus value
+
       particle.rlnDefocusU += z * angpix
       particle.rlnDefocusV += z * angpix
 
@@ -152,4 +153,4 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   my = Recenter(args.star, args.mask, args.dmap, args.length, args.angpix)
-  my.main()
+  my.processMeta(args.star, args.length, args.angpix)
