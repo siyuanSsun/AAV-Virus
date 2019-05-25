@@ -125,12 +125,12 @@ class Recenter():
       particle.rlnDefocusV += z * angpix
 
       # Set up the coordinate value
-      particle.rlnCoordinateX = x_i + int(l/2)
-      particle.rlnCoordinateY = y_i + int(l/2)
+      particle.rlnCoordinateX += x_i
+      particle.rlnCoordinateY += y_i
 
       # Set up origin value
-      particle.rlnOriginX = x_d
-      particle.rlnOriginY = y_d
+      particle.rlnOriginX += x_d
+      particle.rlnOriginY += y_d
 
       subparticle.append(particle)
     
