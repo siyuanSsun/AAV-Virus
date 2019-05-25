@@ -95,6 +95,7 @@ class Recenter():
 
     print("Reading star file ...")
     meta = MetaData(starfile)
+    labels = meta.getLabels()
     print("Star file read successfully.")
     submeta = MetaData()
     subparticle = []
@@ -135,6 +136,7 @@ class Recenter():
       subparticle.append(particle)
     
     print("Metadata process done.")
+    submeta.addLabels(labels)
     submeta.addData(subparticle)
     submeta.write("sub_" + starfile)
   
