@@ -140,7 +140,41 @@ class Recenter():
     submeta.addData(subparticle)
     submeta.write("sub_" + starfile)
   
-  
+
+def removedup(starfile):
+    '''
+    To remove the duplicated line from a starfile and save it as a copy
+
+    Args:
+    starfile: star file that contains particles info
+    '''
+    print("Reading star file ...")
+    meta = MetaData(starfile)
+    labels = meta.getLabels()
+    print("Star file read successfully.")
+    print("Before processing, {0} particles read.".format(meta.size()))
+    submeta = MetaData()
+    subparticle = []
+    existed = {}
+    print("Processing metadata ...")
+    for particle in meta:
+      pos = str(particle.rlnCoordinateX) + str(particle.rlnCoordinateY)
+      existed[pos] = 0
+    
+    for particle in meta:
+      pos = str(particle.rlnCoordinateX) + str(particle.rlnCoordinateY)
+      existed[pos] += 1
+
+      if existed[pos] == 1:
+        subparticle.append(particle)
+      
+    print("After processing, {0} particles remained.".format(len(subparticle)))
+    print("Metadata process done.")
+    submeta.addLabels(labels)
+    submeta.addData(subparticle)
+    submeta.write(starfile.split('.')[0] + '_dupless.star')
+
+    
 
 
 if __name__ == "__main__":
