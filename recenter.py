@@ -66,7 +66,7 @@ class Recenter():
       print("Opening density map {0}".format(dmappath))
       with mf.open(dmappath, permissive=True) as dmap:
           ddata = dmap.data
-    
+
     # refernce here to calculate center of mass of a given 3D array
     # https://stackoverflow.com/questions/29356825/python-calculate-center-of-mass
     print("Calculating center of mass: ")
@@ -174,7 +174,28 @@ def removedup(starfile):
     submeta.addData(subparticle)
     submeta.write(starfile.split('.')[0] + '_dupless.star')
 
+
+def createRef(dmappath, maskpath):
+
+  with warnings.catch_warnings(record=True) as w:
+    print("Opening mask {0}".format(maskpath))
+    with mf.open(maskpath, permissive=True) as mask:
+      mdata = mask.data
     
+    print("Opening density map {0}".format(dmappath))
+    with mf.open(dmappath, permissive=True) as dmap:
+        ddata = dmap.data
+        voxel_size = dmap.voxel_size
+    
+
+  print("Creating reference map.....")
+  with mf.new(dmappath.split('.')[0] + '_ref.mrc', overwrite=True) as ref:
+    cord = np.argwhere(mdata < 0.2)
+    ddata[cord[:,0], cord[:,1], cord[:,2]] = 0
+    ref.set_data = ddata
+    ref.voxel_size = voxel_size
+    print('Reference created')
+
 
 
 if __name__ == "__main__":
