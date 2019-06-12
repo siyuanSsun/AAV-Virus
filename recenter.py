@@ -179,11 +179,11 @@ def createRef(dmappath, maskpath):
 
   with warnings.catch_warnings(record=True) as w:
     print("Opening mask {0}".format(maskpath))
-    with mf.open(maskpath, permissive=True) as mask:
+    with mf.open(maskpath, mode='r+', permissive=True) as mask:
       mdata = mask.data
     
     print("Opening density map {0}".format(dmappath))
-    with mf.open(dmappath, permissive=True) as dmap:
+    with mf.open(dmappath, mode='r+', permissive=True) as dmap:
         ddata = dmap.data
         voxel_size = dmap.voxel_size
     
