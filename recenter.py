@@ -189,11 +189,14 @@ def createRef(dmappath, maskpath):
     
 
   print("Creating reference map.....")
-  with mf.new(dmappath.split('.')[0] + '_ref.mrc', overwrite=True) as ref:
+  with mf.new(dmappath + '_ref.mrc', overwrite=True) as ref:
     cord = np.argwhere(mdata < 0.2)
     data = ddata[:]
+    print(data[cord[:,0], cord[:,1], cord[:,2]]) 
     data[cord[:,0], cord[:,1], cord[:,2]] = 0
-    ref.set_data = data
+    print(data)
+    print(np.argwhere(data > 0))
+    ref.set_data(data)
     ref.voxel_size = voxel_size
     print('Reference created')
 
