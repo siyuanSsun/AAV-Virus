@@ -103,6 +103,8 @@ class Recenter():
     print("Processing metadata ...")
     for particle in meta:
 
+      subpart = particle.clone()
+
       rot = particle.rlnAngleRot
       psi = particle.rlnAnglePsi
       tilt = particle.rlnAngleTilt 
@@ -111,10 +113,10 @@ class Recenter():
       rotM = rotMatrix(rot, tilt, psi, radians=False)
       
       cm = -int(l/2) + self.cm
-      cm[0] += particle.rlnOriginX
-      cm[1] += particle.rlnOriginY
-
       coord = np.dot(rotM, cm)
+      coord[0] += particle.rlnOriginX
+      coord[1] += particle.rlnOriginY
+
 
       x_d, x_i = math.modf(coord[0])
       y_d, y_i = math.modf(coord[1])
@@ -122,18 +124,18 @@ class Recenter():
       
       # Modify CTF defocus value
 
-      particle.rlnDefocusU += z * angpix
-      particle.rlnDefocusV += z * angpix
+      subpart.rlnDefocusU = particle.rlnDefocusU + z * angpix
+      subpart.rlnDefocusV = particle.rlnDefocusV + z * angpix
 
       # Set up the coordinate value
-      particle.rlnCoordinateX += x_i
-      particle.rlnCoordinateY += y_i
+      subpart.rlnCoordinateX = particle.rlnCoordinateX - coord[0]
+      subpart.rlnCoordinateY = particle.rlnCoordinateY - coord[1]
 
       # Set up origin value
-      particle.rlnOriginX += x_d
-      particle.rlnOriginY += y_d
+      subpart.rlnOriginX = x_d
+      subpart.rlnOriginY = y_d
 
-      subparticle.append(particle)
+      subparticle.append(subpart)
     
     print("Metadata process done.")
     submeta.addLabels(labels)
